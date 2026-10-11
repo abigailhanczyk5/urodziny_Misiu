@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>28. Urodziny Michała - Quiz Urodzinowy 🎂</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top left, #2d0b1e, #12050c);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .font-serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 182, 193, 0.18);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(244, 114, 182, 0.1);
+        }
+
+        .btn-correct {
+            background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+            box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-correct:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px -5px rgba(244, 63, 94, 0.6);
+        }
+
+        .btn-wrong {
+            background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.15s ease-out, top 0.2s ease, left 0.2s ease;
+            position: relative;
+        }
+
+        /* Floating background elements animation */
+        .bg-heart {
+            position: absolute;
+            color: rgba(244, 114, 182, 0.12);
+            animation: floatUpDown 6s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes floatUpDown {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(12deg); }
+        }
+
+        /* Pulse highlight */
+        .gold-glow {
+            animation: goldGlow 2.5s infinite alternate;
+        }
+
+        @keyframes goldGlow {
+            0% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); }
+            100% { box-shadow: 0 0 35px rgba(234, 179, 8, 0.7); }
+        }
+
+        .evade-tooltip {
+            position: absolute;
+            background: #e11d48;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            z-index: 50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 min-h-screen relative overflow-hidden">
+
+    <i class="fa-solid fa-heart bg-heart text-7xl top-10 left-10" style="animation-delay: 0s;"></i>
+    <i class="fa-solid fa-heart bg-heart text-9xl bottom-10 right-10" style="animation-delay: 2s;"></i>
+    <i class="fa-solid fa-cake-candles bg-heart text-6xl top-1/3 right-1/4" style="animation-delay: 4s;"></i>
+    <i class="fa-solid fa-wine-glass bg-heart text-5xl bottom-1/4 left-1/5" style="animation-delay: 1s;"></i>
+
+    <!-- Tooltip for runaway button -->
+    <div id="evade-tooltip" class="evade-tooltip">Bubuś, próba oszustwa! 😉</div>
+
+    <main class="w-full max-w-xl z-10">
+
+        <!-- INTRO SCREEN -->
+        <div id="screen-intro" class="glass-card rounded-3xl p-6 sm:p-10 text-center relative overflow-hidden">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs sm:text-sm font-semibold mb-6 uppercase tracking-wider">
+                <i class="fa-solid fa-crown mr-2"></i>Edycja Specjalna: 28 Lat!
+            </div>
+            
+            <h1 class="font-serif-title text-3xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-rose-200 via-pink-300 to-amber-200 bg-clip-text text-transparent leading-tight">
+                Urodzinowy Test dla Michała! ❤️
+            </h1>
+
+            <p class="text-slate-300 text-sm sm:text-base mb-8 leading-relaxed">
+                Cześć Misiu! Z okazji Twoich <strong class="text-rose-300">28. urodzin</strong> przygotowałam dla Ciebie szybki test z wiedzy o nas. Zasady są proste: 5 pytań, ale pamiętaj... <span class="italic font-semibold text-amber-300">prawda jest tylko jedna!</span> 😉
+            </p>
+
+            <button onclick="startQuiz()" class="btn-correct w-full py-4 rounded-2xl text-white font-bold text-lg sm:text-xl flex items-center justify-center gap-3">
+                <span>Zaczynamy Quiz, Bubuś!</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <div id="screen-quiz" class="glass-card rounded-3xl p-6 sm:p-10 hidden relative min-h-[460px] flex flex-col justify-between">
+            
+            <!-- Progress Header -->
+            <div>
+                <div class="flex items-center justify-between text-xs sm:text-sm font-semibold text-rose-300 mb-3">
+                    <span id="question-step">Pytanie 1 z 5</span>
+                    <span id="nickname-badge" class="bg-rose-500/20 px-3 py-1 rounded-full border border-rose-500/30">Misiu 👑</span>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-8">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-500 w-1/5"></div>
+                </div>
+
+                <!-- Question Text -->
+                <h2 id="question-text" class="font-serif-title text-xl sm:text-2xl font-bold text-white mb-8 min-h-[60px]">
+                    <!-- Question dynamically inserted here -->
+                </h2>
+            </div>
+
+            <!-- Answer Buttons Container -->
+            <div id="answers-container" class="relative w-full min-h-[180px] flex flex-col gap-4 justify-center">
+                <!-- Dynamically generated answer buttons -->
+            </div>
+
+            <!-- Funny Status Message -->
+            <div id="quiz-hint" class="text-center text-xs text-slate-400 italic mt-4 h-5">
+                Wskazówka: Tylko prawidłowe odpowiedzi są do kliknięcia!
+            </div>
+        </div>
+
+        <!-- FINAL INVITATION SCREEN -->
+        <div id="screen-final" class="glass-card rounded-3xl p-6 sm:p-10 hidden text-center gold-glow border-2 border-amber-400/50 relative overflow-hidden">
+            
+            <!-- Decorative Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs sm:text-sm font-bold mb-4 uppercase tracking-widest">
+                <i class="fa-solid fa-star text-amber-400"></i> Oficjalny Prezent Urodzinowy <i class="fa-solid fa-star text-amber-400"></i>
+            </div>
+
+            <h1 class="font-serif-title text-3xl sm:text-4xl font-black mb-2 text-white">
+                Wszystkiego Najlepszego, <br>
+                <span class="bg-gradient-to-r from-amber-200 via-rose-300 to-amber-400 bg-clip-text text-transparent">Bubuletti! 🎉</span>
+            </h1>
+
+            <p class="text-rose-200 text-sm sm:text-base mb-6 font-medium">
+                Zdałeś test na 100%! Oto Twoja zasłużona nagroda:
+            </p>
+
+            <!-- Invitation Card -->
+            <div class="bg-gradient-to-br from-slate-900/90 to-slate-950/90 border border-amber-500/40 rounded-2xl p-6 text-left shadow-2xl relative space-y-4 mb-6">
+                
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <span class="text-xs text-amber-400/80 font-semibold uppercase tracking-wider">Zaproszenie na Kolację</span>
+                    <i class="fa-solid fa-utensils text-amber-400 text-lg"></i>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-location-dot text-rose-400 text-lg mt-0.5 w-5 text-center"></i>
+                        <div>
+                            <p class="text-xs text-slate-400">Gdzie:</p>
+                            <p class="text-lg font-bold text-white">Praski Butcher</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-clock text-amber-400 text-lg mt-0.5 w-5 text-center"></i>
+                        <div>
+                            <p class="text-xs text-slate-400">Kiedy:</p>
+                            <p class="text-base font-bold text-amber-200">Dzisiaj o godzinie 19:00</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-drumstick-bite text-rose-400 text-lg mt-0.5 w-5 text-center"></i>
+                        <div>
+                            <p class="text-xs text-slate-400">W menu:</p>
+                            <p class="text-sm font-semibold text-slate-200">Wyśmienite steki, wspaniały klimat i my! 🥩🍷</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-3 text-center">
+                    <p class="text-xs text-pink-300 italic font-serif-title">
+                        "Nie mogę się doczekać naszego dzisiejszego wieczoru! Kocham Cię Misiu! ❤️"
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="triggerConfetti()" class="btn-correct flex-1 py-3.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-party-horn"></i> Więcej Konfetti! 🥳
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Questions Data
+        const questions = [
+            {
+                q: "Ile lat kończy dzisiaj najfajniejszy facet na świecie (Michał)?",
+                correct: "28 lat (wiek idealny! 🎉)",
+                wrong: "18 lat (chociaż na tyle wygląda 😎)"
+            },
+            {
+                q: "Jakie jest absolutnie najlepsze śniadanie mistrzów w naszym domu?",
+                correct: "Puszyste omlety ze świeżymi malinami 🥞🍓",
+                wrong: "Owsianka na wodzie bez soli 🥣"
+            },
+            {
+                q: "Jaki jest Twój oficjalny, najsłodszy tytuł nadany przeze mnie?",
+                correct: "Bubuletti / Bubulek / Bubuś / Misiu ❤️",
+                wrong: "Pan Prezes Surowego Zarządu 💼"
+            },
+            {
+                q: "Jaki pasjonujący plan czeka nas w najbliższej przyszłości?",
+                correct: "Rozpalenie parkietu na wspólnych lekcjach tańca! 💃🕺",
+                wrong: "Kurs zaawansowanego szydełkowania dla dwojga 🧶"
+            },
+            {
+                q: "Co robimy dzisiaj wieczorem w ramach urodzinowego świętowania?",
+                correct: "Świętujemy przy pysznych stekach na wyjątkowej kolacji! 🥩🍷",
+                wrong: "Liczymy kalorie i idziemy wcześnie spać 😴"
+            }
+        ];
+
+        const nicknames = ["Misiu 👑", "Bubulek 💕", "Bubuś 🥰", "Bubuletti 💖", "Solenizant 🎉"];
+        const evadeTexts = [
+            "Bubuś, próba oszustwa! 😉",
+            "Nie trafiłeś! Prawda jest tylko jedna!",
+            "Za wolno Misiu! 🚀",
+            "Zła odpowiedź ucieka! 😄",
+            "Nawet nie próbuj! ❤️"
+        ];
+
+        let currentQuestion = 0;
+        let evadeCount = 0;
+
+        // --- STREAMING_CHUNK:Quiz Navigation & Event Handlers... ---
+        function startQuiz() {
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = questions[currentQuestion];
+            document.getElementById('question-step').innerText = `Pytanie ${currentQuestion + 1} z ${questions.length}`;
+            document.getElementById('nickname-badge').innerText = nicknames[currentQuestion % nicknames.length];
+            document.getElementById('question-text').innerText = data.q;
+            
+            // Update Progress Bar
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+
+            const container = document.getElementById('answers-container');
+            container.innerHTML = '';
+
+            // Randomize order of buttons (correct vs wrong)
+            const isCorrectFirst = Math.random() < 0.5;
+
+            const correctBtn = document.createElement('button');
+            correctBtn.className = "btn-correct w-full p-4 rounded-2xl text-left text-white font-bold text-sm sm:text-base flex items-center justify-between";
+            correctBtn.innerHTML = `<span>${data.correct}</span> <i class="fa-solid fa-circle-check text-xl"></i>`;
+            correctBtn.onclick = () => nextQuestion();
+
+            const wrongBtn = document.createElement('button');
+            wrongBtn.id = "runaway-btn";
+            wrongBtn.className = "btn-wrong w-full p-4 rounded-2xl text-left text-slate-300 font-semibold text-sm sm:text-base flex items-center justify-between";
+            wrongBtn.innerHTML = `<span>${data.wrong}</span> <i class="fa-solid fa-circle-xmark text-slate-500 text-xl"></i>`;
+            
+            // Add Runaway Event Listeners for both desktop mouse and touch
+            wrongBtn.addEventListener('mouseenter', evadeButton);
+            wrongBtn.addEventListener('mousemove', evadeButton);
+            wrongBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                evadeButton(e);
+            });
+            wrongBtn.onclick = (e) => {
+                e.preventDefault();
+                evadeButton(e);
+            };
+
+            if (isCorrectFirst) {
+                container.appendChild(correctBtn);
+                container.appendChild(wrongBtn);
+            } else {
+                container.appendChild(wrongBtn);
+                container.appendChild(correctBtn);
+            }
+        }
+
+        // --- STREAMING_CHUNK:Runaway Mechanism for Incorrect Answers... ---
+        function evadeButton(event) {
+            const btn = document.getElementById('runaway-btn');
+            if (!btn) return;
+
+            const container = document.getElementById('answers-container');
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = btn.getBoundingClientRect();
+
+            // Calculate random new positions within container bounds
+            const maxX = containerRect.width - btnRect.width;
+            const maxY = containerRect.height - btnRect.height;
+
+            // Generate offset
+            let randomX = Math.floor(Math.random() * Math.max(maxX, 120)) - (maxX / 2);
+            let randomY = Math.floor(Math.random() * 80) - 40;
+
+            btn.style.position = 'relative';
+            btn.style.left = `${randomX}px`;
+            btn.style.top = `${randomY}px`;
+            btn.style.transform = `scale(${0.9 + Math.random() * 0.15}) rotate(${Math.floor(Math.random() * 20) - 10}deg)`;
+
+            // Show funny tooltip
+            showTooltip(event, evadeTexts[evadeCount % evadeTexts.length]);
+            evadeCount++;
+        }
+
+        function showTooltip(e, text) {
+            const tooltip = document.getElementById('evade-tooltip');
+            tooltip.innerText = text;
+            tooltip.style.opacity = '1';
+
+            const x = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
+            const y = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
+
+            tooltip.style.left = `${x - 60}px`;
+            tooltip.style.top = `${y - 45}px`;
+
+            clearTimeout(window.tooltipTimeout);
+            window.tooltipTimeout = setTimeout(() => {
+                tooltip.style.opacity = '0';
+            }, 1200);
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showFinalScreen();
+            }
+        }
+
+        // --- STREAMING_CHUNK:Final Celebration & Confetti Logic... ---
+        function showFinalScreen() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-final').classList.remove('hidden');
+            triggerConfetti();
+        }
+
+        function triggerConfetti() {
+            if (window.confetti) {
+                // Heart & Gold standard confetti mix
+                confetti({
+                    particleCount: 80,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#f43f5e', '#fbbf24', '#e11d48', '#fef08a']
+                });
+
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 50,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                    confetti({
+                        particleCount: 50,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>
